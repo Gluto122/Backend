@@ -4,7 +4,26 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 
 const app = express();
-app.use(cors());
+
+// Daftar domain frontend yang diizinkan mengakses API ini
+const allowedOrigins = [
+  "https://mehdimf.my.id",
+  "https://www.mehdimf.my.id",
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // origin bernilai undefined untuk request tanpa origin (misal Postman, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
