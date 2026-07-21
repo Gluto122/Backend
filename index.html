@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mehdi Mahda Fiqy — Mahasiswa Informatika</title>
+<meta name="description" content="Halaman profil Mehdi Mahda Fiqy, mahasiswa S1 Informatika Universitas Ahmad Dahlan.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="window">
+
+  <!-- ===== Chrome bar / navigasi bergaya editor ===== -->
+  <header class="chrome">
+    <div class="chrome__dots" aria-hidden="true">
+      <span class="dot dot--r"></span>
+      <span class="dot dot--y"></span>
+      <span class="dot dot--g"></span>
+    </div>
+
+    <nav class="tabs" aria-label="Navigasi utama">
+      <a href="#profil" class="tab is-active">profil</a>
+      <a href="#tentang" class="tab">tentang</a>
+      <a href="#kontak" class="tab">kontak</a>
+    </nav>
+  </header>
+
+  <!-- ===== PROFIL ===== -->
+  <main>
+    <section id="profil" class="section hero">
+      <div class="terminal">
+        <p class="terminal__line">
+          <span class="prompt">2400018161@webmail.uad.ac.id</span><span class="prompt-sep">:~$</span>
+          <span class="typed">Profil</span><span class="cursor" aria-hidden="true"></span>
+        </p>
+
+        <dl class="whoami">
+          <div class="whoami__row">
+            <dt>nama</dt><dd>Mehdi Mahda Fiqy</dd>
+          </div>
+          <div class="whoami__row">
+            <dt>program_studi</dt><dd>S1 Informatika</dd>
+          </div>
+          <div class="whoami__row">
+            <dt>fakultas</dt><dd>Teknologi Industri</dd>
+          </div>
+          <div class="whoami__row">
+            <dt>kampus</dt><dd>Universitas Ahmad Dahlan</dd>
+          </div>
+          <div class="whoami__row">
+            <dt>nim</dt><dd>2400018161</dd>
+          </div>
+          <div class="whoami__row">
+            <dt>status</dt><dd>Pelajar</dd>
+          </div>
+        </dl>
+      </div>
+
+      <h1 class="hero__title">Halo, saya Mehdi Mahda Fiqy.</h1>
+      <p class="hero__tagline">Mahasiswa Informatika yang senang bermain game dan membaca komik.</p>
+
+      <a href="#tentang" class="btn">Lihat lebih lanjut ↓</a>
+    </section>
+
+    <!-- ===== TENTANG ===== -->
+    <section id="tentang" class="section">
+      <p class="section__eyebrow">tentang.md</p>
+      <h2 class="section__title">Tentang Saya</h2>
+
+      <p class="prose">
+        Saya mahasiswa Program Studi S1 Informatika di Universitas Ahmad Dahlan,
+        Fakultas Teknologi Industri. Saya tertarik pada bidang modelling dan simulasi, serta pemgembangan perangkat lunak
+      </p>
+
+      <!-- <h3 class="prose__subtitle">Yang sedang saya pelajari</h3>
+      <ul class="chips" role="list">
+        <li class="chip">Kecerdasan Buatan</li>
+        <li class="chip">Grafika Komputer</li>
+        <li class="chip">Strategi Algoritma</li>
+        <li class="chip">Analisis &amp; Perancangan Perangkat Lunak</li>
+        <li class="chip">Pemrograman Aplikasi Mobile</li>
+        <li class="chip">Komunikasi Data &amp; Jaringan Komputer</li>
+      </ul>
+    </section> -->
+
+    <!-- ===== KONTAK ===== -->
+    <section id="kontak" class="section">
+      <p class="section__eyebrow">kontak</p>
+      <h2 class="section__title">Hubungi Saya</h2>
+
+      <div class="contact-grid">
+        <dl class="config">
+          <div class="config__row">
+            <dt>"email"</dt><dd>"2400018161@uad.ac.id"</dd>
+          </div>
+          <div class="config__row">
+            <dt>"lokasi"</dt><dd>"Yogyakarta, Indonesia"</dd>
+          </div>
+        </dl>
+
+        <form id="kontak-form" class="form" novalidate>
+          <label class="field">
+            <span>Nama</span>
+            <input type="text" name="name" placeholder="Nama Kamu" required>
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="email@contoh.com" required>
+          </label>
+          <label class="field">
+            <span>Pesan</span>
+            <textarea name="message" rows="4" placeholder="Tulis pesan di sini..." required></textarea>
+          </label>
+          <button type="submit" class="btn btn--solid">Kirim Pesan</button>
+          <p id="kontak-status" class="form__note" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> Mehdi Mahda Fiqy — dibuat dengan HTML &amp; CSS.</p>
+  </footer>
+
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Ganti sesuai alamat backend kamu. Saat masih di komputer sendiri,
+  // biarkan seperti ini (backend dijalankan lewat "npm start" di port 3000).
+  const API_URL = 'http://localhost:3000/api/kontak';
+
+  const form = document.getElementById('kontak-form');
+  const status = document.getElementById('kontak-status');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      message: form.message.value.trim(),
+    };
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    status.textContent = 'Mengirim pesan...';
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+
+      if (res.ok && result.ok) {
+        status.textContent = 'Pesan berhasil dikirim. Terima kasih!';
+        form.reset();
+      } else {
+        status.textContent = result.error || 'Gagal mengirim pesan. Coba lagi.';
+      }
+    } catch (err) {
+      status.textContent = 'Tidak bisa terhubung ke server. Pastikan backend sedang berjalan.';
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
