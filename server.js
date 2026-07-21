@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const app = express();
 
@@ -28,24 +28,10 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Transporter: mengirim email lewat akun Gmail menggunakan App Password
-// (bukan password akun biasa — lihat README.md untuk cara membuatnya)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
-// Cek koneksi ke Gmail saat server pertama kali jalan
-transporter.verify((err) => {
-  if (err) {
-    console.error('Gagal terhubung ke Gmail:', err.message);
-  } else {
-    console.log('Terhubung ke Gmail, siap mengirim email.');
-  }
-});
+// Resend: mengirim email lewat API HTTP (bukan SMTP)
+// SMTP Gmail diblokir di Render free tier, makanya pakai Resend sebagai gantinya.
+// Daftar gratis di https://resend.com untuk mendapatkan RESEND_API_KEY
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, message: 'Backend aktif.' });
@@ -64,10 +50,13 @@ app.post('/api/kontak', async (req, res) => {
   }
 
   try {
-    await transporter.sendMail({
-      from: `"Form Kontak Website" <${process.env.GMAIL_USER}>`,
-      to: process.env.TO_EMAIL || process.env.GMAIL_USER,
-      replyTo: email,
+    const { data, error } = await resend.emails.send({
+      // Selama domain kamu belum diverifikasi di Resend, pakai "onboarding@resend.dev".
+      // Kalau sudah verifikasi domain sendiri, ganti jadi misal:
+      // 'Form Kontak Website <kontak@mehdimf.my.id>'
+      from: 'Form Kontak Website <onboarding@resend.dev>',
+      to: process.env.TO_EMAIL,
+      reply_to: email,
       subject: `Pesan baru dari ${name}`,
       text: `Nama: ${name}\nEmail: ${email}\n\nPesan:\n${message}`,
       html: `
@@ -78,6 +67,12 @@ app.post('/api/kontak', async (req, res) => {
       `,
     });
 
+    if (error) {
+      console.error('Gagal mengirim email:', error);
+      return res.status(500).json({ ok: false, error: 'Gagal mengirim pesan. Coba lagi nanti.' });
+    }
+
+    console.log('Email terkirim, id:', data?.id);
     res.json({ ok: true, message: 'Pesan berhasil dikirim!' });
   } catch (err) {
     console.error('Gagal mengirim email:', err.message);
